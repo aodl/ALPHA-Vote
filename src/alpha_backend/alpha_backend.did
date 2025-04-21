@@ -1,0 +1,7 @@
+type Config = record {
+  alpha_vote_neuron_id : nat64;
+  omega_vote_neuron_id : nat64;
+  omega_reject_neuron_id : nat64;
+  seconds_before_deadline_threshold : nat64;
+};
+service : (Config) -> { };
