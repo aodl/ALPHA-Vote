@@ -1,0 +1,24 @@
+{
+  "canisters": {
+    "alpha_backend": {
+      "candid": "../src/alpha_backend/alpha_backend.did",
+      "package": "alpha_backend",
+      "type": "rust",
+      "skip_cargo_audit": true
+    },
+    "alpha_backend_minor_1": {
+      "candid": "../src/alpha_backend/alpha_backend.did",
+      "package": "alpha_backend",
+      "type": "rust",
+      "skip_cargo_audit": true
+    }
+  },
+  "defaults": {
+    "build": {
+      "args": "",
+      "packtool": ""
+    }
+  },
+  "output_env_file": ".env",
+  "version": 1
+}

@@ -1,6 +1,7 @@
 [workspace]
 members = [
     "src/alpha_backend",
-    "src/alpha_backend_initial"
+    "src/alpha_backend_initial",
+    "xtask"
 ]
 resolver = "2"
