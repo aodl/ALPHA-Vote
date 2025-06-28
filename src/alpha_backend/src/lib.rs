@@ -290,11 +290,11 @@ pub async fn scan_and_process_open_proposals() -> Result<(), String> {
          of which {omega_reject_actioned_in_this_run_count:>2} in this run."
     );
 
-	let full_message = if next_proposal_id != 0 {
-		format!("{base_message} P#{next_proposal_id} due in {next_proposal_due_in} seconds.")
-	} else {
-		base_message
-	};
+    let full_message = if next_proposal_id != 0 {
+        format!("{base_message} P#{next_proposal_id} due in {next_proposal_due_in} seconds.")
+    } else {
+        base_message
+    };
 
     print(full_message);
 
@@ -320,38 +320,38 @@ async fn process_one_proposal(
         .ok_or("proposal.id missing")?
         .id;
 
-	let deadline_ts_secs = proposal
-		.deadline_timestamp_seconds
-		.unwrap_or(0);
+    let deadline_ts_secs = proposal
+        .deadline_timestamp_seconds
+        .unwrap_or(0);
 
-	let diff_secs = deadline_ts_secs
-		.saturating_sub(time() / 1_000_000_000)// ns to seconds
-		.saturating_sub(seconds_before_deadline_threshold);
-		
-	if diff_secs != 0 {
-		*next_proposal_id = proposal_id;
-		*next_proposal_due_in = diff_secs;
-		return Ok(()); // nothing to do yet
-	}
-	
-	*actionable_count += 1;
+    let diff_secs = deadline_ts_secs
+        .saturating_sub(time() / 1_000_000_000)// ns to seconds
+        .saturating_sub(seconds_before_deadline_threshold);
+        
+    if diff_secs != 0 {
+        *next_proposal_id = proposal_id;
+        *next_proposal_due_in = diff_secs;
+        return Ok(()); // nothing to do yet
+    }
+    
+    *actionable_count += 1;
 
-	let should_trigger_omega_reject = match proposal.ballots.get(&omega_reject_neuron_id) {
-		Some(b) => b.vote == 0,// not voted yet
-		None => {// ballot not found
-			print(format!("[P#{proposal_id}] ERROR scanning ballot: Neuron {omega_reject_neuron_id} not found"));
-			true// for safety, assume the worst (not voted) and attempt to trigger a vote
-		}
-	};
-	if should_trigger_omega_reject {		
+    let should_trigger_omega_reject = match proposal.ballots.get(&omega_reject_neuron_id) {
+        Some(b) => b.vote == 0,// not voted yet
+        None => {// ballot not found
+            print(format!("[P#{proposal_id}] ERROR scanning ballot: Neuron {omega_reject_neuron_id} not found"));
+            true// for safety, assume the worst (not voted) and attempt to trigger a vote
+        }
+    };
+    if should_trigger_omega_reject {        
         if let Err(e) = register_vote(omega_reject_neuron_id, proposal_id, Vote::No).await
         {
             print(format!("[P#{proposal_id}] ERROR auto‑voting for neuron {omega_reject_neuron_id}: {e}"));
         }
         *omega_reject_actioned_this_run += 1;
-	} else {
-		*omega_reject_already_actioned += 1;
-	}
+    } else {
+        *omega_reject_already_actioned += 1;
+    }
 
     let vote_enum = match proposal.ballots.get(&alpha_vote_neuron_id) {
         Some(b) if b.vote == 1  => Vote::Yes,
@@ -366,14 +366,14 @@ async fn process_one_proposal(
         }
     };
 
-	let should_trigger_omega_vote = match proposal.ballots.get(&omega_vote_neuron_id) {
-		Some(b) => b.vote == 0,// not voted yet
-		None => {// ballot not found
-			print(format!("[P#{proposal_id}] ERROR scanning ballot: Neuron {omega_vote_neuron_id} not found"));
-			true// for safety, assume the worst (not voted) and attempt to trigger a vote
-		}
-	};
-	if should_trigger_omega_vote {
+    let should_trigger_omega_vote = match proposal.ballots.get(&omega_vote_neuron_id) {
+        Some(b) => b.vote == 0,// not voted yet
+        None => {// ballot not found
+            print(format!("[P#{proposal_id}] ERROR scanning ballot: Neuron {omega_vote_neuron_id} not found"));
+            true// for safety, assume the worst (not voted) and attempt to trigger a vote
+        }
+    };
+    if should_trigger_omega_vote {
         if let Err(e) = register_vote(omega_vote_neuron_id, proposal_id, vote_enum).await
         {
             print(format!("[P#{proposal_id}] ERROR auto‑voting for neuron {omega_vote_neuron_id}: {e}"));

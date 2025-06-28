@@ -20,7 +20,7 @@ Voters who have every **intention** of reviewing proposals for a specific topic 
 </details>
 
 #### [Ωmega-vote](https://dashboard.internetcomputer.org/neuron/18363645821499695760)
-Voters who intend to **sometimes** step in and vote on a specific topic should consider following Ωmega-vote. This ensures a diligent vote is cast by default (if D-QUORUM has voted), but also gives the follower the ability to vote manually for the vast majority of the voting period (should they decide to). If they end up no voting manually, D-QUORUM's vote will be copied by Ωmega-vote within the last 3 hours of the proposal deadline (which will then trigger your neuron to vote the same way). If D-QUORUM didn't vote either, then a default rejection will be triggered (in the same way as Ωmega-reject).
+Voters who intend to **sometimes** step in and vote on a specific topic should consider following Ωmega-vote. This ensures a diligent vote is cast by default (if D-QUORUM has voted), but also gives the follower the ability to vote manually for the vast majority of the voting period (should they decide to). If they end up not voting manually, D-QUORUM's vote will be copied by Ωmega-vote within the last 3 hours of the proposal deadline (which will then trigger your neuron to vote the same way). If D-QUORUM didn't vote either, then a default rejection will be triggered (in the same way as Ωmega-reject).
 
 <details>
 <summary>Important Usage Notice</summary>
@@ -79,7 +79,7 @@ The 3 known neurons are configured to follow the minor canister neurons on each 
 
 The alpha_backend cansiter, and the alpha_backend_minor cansiters, poll the NNS at the same regular interval (offset arbitrarily by deployment timing and drift). They differ, however, in that the alpha_backend canister only triggers a vote on the known neurons in the last hour of the voting period (if the neuron hasn't voted already). The minor canisters, on the other hand, trigger a vote on their neurons as soon as 3 hours before the end of the voting period. This means that if all systems are working well, and the majority of subnets are not in a stalled state, then the fiduciary alpha_backend canister will never need to trigger a vote (it will have been triggered already via the followee neurons). If, on the other hand, consensus is not reached by those neurons (due to subnet failure), the alpha_backend canister will pick up the slack. 
 
-Note that the majority of 13 node subnets involved in this consensus would need to be hijacked to be able to attack the known neurons and control their vote. Alternatively the fiduciary subnet would need to be hijacked (40 nodes makes this implausable under realistic assumptions). **Consensus across 13-node sunbets is means of providing redundancy without sacrificing on security**.
+Note that the majority of 13 node subnets involved in this consensus would need to be hijacked to be able to attack the known neurons and control their vote. Alternatively the fiduciary subnet would need to be hijacked (40 nodes makes this implausable under realistic assumptions). **Consensus across 13-node sunbets is a means of providing redundancy without sacrificing on security**.
 
 </details>
 
