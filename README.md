@@ -261,9 +261,8 @@ dfx canister call alpha_backend follow '(18422777432977120264:nat64, 14:int32, v
 
 </details>
 
-
-
-
+Finally, be sure to set log visibility to public.
+- `dfx canister update-settings alpha_backend_minor_{number} --log-visibility=public --network=ic`
 
 ### Maintenance
 
@@ -271,11 +270,7 @@ dfx canister call alpha_backend follow '(18422777432977120264:nat64, 14:int32, v
 
 #### Logs
 
-All canister logs are private and visible only to team members (see the Settings section at the end of this document). The reason for this is to reduce the surface for cycle draining attacks. Similarly, different team members are responsible for accessing the logs of different canisters (no team members has direct access to the logs for all canisters).
-
-TODO, ensure logs are configured this way before launching.
-
-Logs are also technically accessible to the canister controller, which is the threshold canister (requiring a proposal and consensus).
+~~All canister logs are private and visible only to team members (see the Settings section at the end of this document). The reason for this is to reduce the surface for cycle draining attacks. Similarly, different team members are responsible for accessing the logs of different canisters (no team members has direct access to the logs for all canisters).~~ All logs are public, [without the need to worry about a cycle drain attack](https://forum.dfinity.org/t/canister-logging-support-community-consideration/25571/45).
 
 #### Cycles
 
