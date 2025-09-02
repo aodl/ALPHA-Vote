@@ -139,7 +139,7 @@ There are also additional steps to follow after deployment, to ensure the newly 
 <details>
 <summary>Stage 1 (list of steps)</summary>
 
-- First add a new entry to [dfx.json](https://github.com/aodl/ALPHA-Vote/blob/master/dfx.json), copying the one for `alpha_backend`, but rename to add `_minor_2` (but use whatever is the next available number, instead of 2), then also append `_initial` to the directories in the candid path (`src/alpha_backend_initial/alpha_backend_initial.did`)
+- First add a new entry to [dfx.json](https://github.com/aodl/ALPHA-Vote/blob/master/dfx.json), copying the one for `alpha_backend`, but rename to add `_minor_2` (but use whatever is the next available number, instead of 2), then also append `_initial` to the package name and the directories in the candid path (`src/alpha_backend_initial/alpha_backend_initial.did`) 
 - Choose a subnet to deploy to (one that does not already contain an alpha_backend_minor canister)
 - Deploy, using -> `dfx deploy alpha_backend_minor_{number} --network=ic --subnet {subnet_id}`
 - Call `dfx canister id alpha_backend_minor_{number} --network=ic`. This should return the id of the new canister. It should match an entry that dfx will have automatically inserted into [canister_ids.json](https://github.com/aodl/ALPHA-Vote/blob/master/canister_ids.json) (this will need committing, to keep track of the suite of canisters being used).
@@ -175,7 +175,7 @@ Note that these logs demonstrate a failure case (where an insufficient amont of 
 <details>
 <summary>Stage 2 (list of steps)</summary>
 
-- Once you've got this far, go back to [dfx.json](https://github.com/aodl/ALPHA-Vote/blob/master/dfx.json) and remove the _initial prefixs from directories in the candid path. This means the `alpha_backend` implementation will now be used, rather than the `alpha_backend_initial` implementation.
+- Once you've got this far, go back to [dfx.json](https://github.com/aodl/ALPHA-Vote/blob/master/dfx.json) and remove the _initial prefixs from the package and directories in the candid path. This means the `alpha_backend` implementation will now be used, rather than the `alpha_backend_initial` implementation.
 - Then redeploy as a reinstall, specifying the neurons that were just created, and a 3 hour vote deadline threshold (10800 seconds). e.g.
 
 ```
