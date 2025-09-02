@@ -1,0 +1,18 @@
+#V2
+// authenticate
+identity private "/root/.config/dfx/identity/ident-1/identity.pem";     // ic-repl’s built-in identity command :contentReference[oaicite:0]{index=0}
+// target the governance canister (NNS) explicitly
+let nns = "rrkah-fqaaa-aaaaa-aaaaq-cai";
+// +365 days  (60 * 60 * 24 * 365)
+let one_year = 31536000 : nat64;
+// ----- Ref ---------------------------------------------------------------
+call nns.manage_neuron(\n  record {\n    id = opt record { id = 4169443185338238500 : nat64 };\n    command = opt variant { Configure = record {\n      operation = opt variant {\n        IncreaseDissolveDelay = record {\n          additional_dissolve_delay_seconds = one_year\n        }\n      }\n    }}\n  }\n);
+// ----- AV ---------------------------------------------------------------
+call nns.manage_neuron(\n  record {\n    id = opt record { id = 17821076663347300019 : nat64 };\n    command = opt variant { Configure = record {\n      operation = opt variant {\n        IncreaseDissolveDelay = record {\n          additional_dissolve_delay_seconds = one_year\n        }\n      }\n    }}\n  }\n);
+// ----- OV ---------------------------------------------------------------
+call nns.manage_neuron(\n  record {\n    id = opt record { id = 1100800792811872781 : nat64 };\n    command = opt variant { Configure = record {\n      operation = opt variant {\n        IncreaseDissolveDelay = record {\n          additional_dissolve_delay_seconds = one_year\n        }\n      }\n    }}\n  }\n);
+// ----- OR ---------------------------------------------------------------
+call nns.manage_neuron(\n  record {\n    id = opt record { id = 1656665471377761379 : nat64 };\n    command = opt variant { Configure = record {\n      operation = opt variant {\n        IncreaseDissolveDelay = record {\n          additional_dissolve_delay_seconds = one_year\n        }\n      }\n    }}\n  }\n);
+identity private "~/.config/dfx/identity/ident-1/identity.pem"
+call "rrkah-fqaaa-aaaaa-aaaaq-cai".manage_neuron(record{ id = opt record { id = 11834298889685287528 }; command = opt variant{ MakeProposal = record{ url = ""; title = opt "Known Neuron Proposal"; action = opt variant { RegisterKnownNeuron = record{ id = opt record { id = 11834298889685287528 }; known_neuron_data = opt record { name = "Test Known Neuron"; description = opt "Test proposal for a known neuron" } } }; summary = "Proposal summary text" } } });
+call "rrkah-fqaaa-aaaaa-aaaaq-cai".manage_neuron(record{ id = opt record { id = 11834298889685287528 }; command = opt variant{ MakeProposal = record{ url = ""; title = opt "Known Neuron Proposal"; action = opt variant { RegisterKnownNeuron = record{ id = opt record { id = 11834298889685287528 }; known_neuron_data = opt record { name = "Test Known Neuron"; description = opt "Test proposal for a known neuron" } } }; summary = "Proposal summary text" } } })

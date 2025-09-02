@@ -16,3 +16,6 @@ ic-agent = "0.40.1"
 tokio    = { version = "1.37", features = ["full"] }
 serde = { version = "1.0", features = ["derive"] }
 serde_json = "1.0"
+
+[dev-dependencies]
+tests = { path = "../tests" }

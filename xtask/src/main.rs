@@ -151,8 +151,17 @@ fn setup_environment() -> Result<()> {
 // cargo xtask run-e2e-tests
 fn run_e2e_tests() -> Result<()> {
 
-    println!("{}TODO - test sub{}", TURQUOISE, END_COLOUR);
+    println!("{}Running test cases against locally setup environment...{}", TURQUOISE, END_COLOUR);
+    println!("{}Assumes an existing local environment ('cargo xtask setup-environment' should already have been executed).{}", TURQUOISE, END_COLOUR);
 
+    // 'ignored' tests are intended for e2e tests, and delegate to the integration test cases.
+    //  This approach allows the same test scenarios to run as lightweight integration tests 
+    //  with mocked replica/NNS components by running WITHOUT the '--ignored' flag. The 'ignored'
+    //  test entry points make use of the more complete environment (from 'setup-environment')
+    cmd!("cargo", "test", "--", "--ignored").run()?;
+
+    println!("{}Finished running tests{}", TURQUOISE, END_COLOUR);
+    println!("{}Local environment still running ('cargo xtask destroy-environment' can be executed for teardown).{}", TURQUOISE, END_COLOUR);
     Ok(())
 }
 

@@ -2,6 +2,7 @@
 members = [
     "src/alpha_backend",
     "src/alpha_backend_initial",
-    "xtask"
+    "xtask",
+    "tests"
 ]
 resolver = "2"

@@ -12,7 +12,6 @@ use ic_stable_structures::{
 use ic_nns_common::pb::v1::{NeuronId, ProposalId};
 use ic_nns_governance::pb::v1::{
     manage_neuron::{Command, RegisterVote, Follow}, 
-    //manage_neuron_response::{Command as CommandResponse},
     ManageNeuronResponse, ManageNeuron, Vote
 };
 use serde::{Deserialize, Serialize};
@@ -21,11 +20,11 @@ use std::cell::RefCell;
 const GOVERNANCE_CANISTER_ID: &str = "rrkah-fqaaa-aaaaa-aaaaq-cai";
 
 #[derive(CandidType, Deserialize, Serialize, Clone, Default)]
-struct Config {
-    alpha_vote_neuron_id: u64,
-    omega_vote_neuron_id: u64,
-    omega_reject_neuron_id: u64,
-    seconds_before_deadline_threshold: u64
+pub struct Config {
+    pub alpha_vote_neuron_id: u64,
+    pub omega_vote_neuron_id: u64,
+    pub omega_reject_neuron_id: u64,
+    pub seconds_before_deadline_threshold: u64
 }
 
 macro_rules! cell {
