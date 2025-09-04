@@ -9,6 +9,26 @@
       "candid": "src/alpha_backend/alpha_backend.did",
       "package": "alpha_backend",
       "type": "rust"
+    },
+    "alpha_backend_minor_2": {
+      "candid": "src/alpha_backend/alpha_backend.did",
+      "package": "alpha_backend",
+      "type": "rust"
+    },
+    "alpha_backend_minor_3": {
+      "candid": "src/alpha_backend/alpha_backend.did",
+      "package": "alpha_backend",
+      "type": "rust"
+    },
+    "alpha_backend_minor_4": {
+      "candid": "src/alpha_backend/alpha_backend.did",
+      "package": "alpha_backend",
+      "type": "rust"
+    },
+    "alpha_backend_minor_5": {
+      "candid": "src/alpha_backend/alpha_backend.did",
+      "package": "alpha_backend",
+      "type": "rust"
     }
   },
   "defaults": {
