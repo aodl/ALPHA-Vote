@@ -206,6 +206,14 @@ The neuron ids used in the command above should obviously be swapped for the one
 
 If you don't see the last line you may need to wait a minute and check the logs again. Regarding the errors, this is because the neurons were created while the proposals were open, so their ballots are not available. After 4 or so days, these errors will no longer occur.
 
+- Set the alpha-vote neuron (smallest neuron id of the 3 for this new canister) to follow D-QUORUM directly. Note that the known alpha-vote neuron follows D-QOURUM indirectly, via these minor canister neurons (see post-deployment configuration).
+
+```
+dfx canister call alpha_backend_minor_[n] follow '([smallest id of this canister's 3 neurons]:nat64, 0:int32, vec { 4713806069430754115:nat64 })' --network=ic
+dfx canister call alpha_backend_minor_[n] follow '([smallest id of this canister's 3 neurons]:nat64, 4:int32, vec { 4713806069430754115:nat64 })' --network=ic
+dfx canister call alpha_backend_minor_[n] follow '([smallest id of this canister's 3 neurons]:nat64, 14:int32, vec { 4713806069430754115:nat64 })' --network=ic
+```
+
 </details>
 
 <details>
