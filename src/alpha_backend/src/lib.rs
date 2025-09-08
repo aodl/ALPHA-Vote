@@ -10,10 +10,9 @@ use ic_stable_structures::{
     DefaultMemoryImpl, StableCell,
 };
 use ic_nns_common::pb::v1::{NeuronId, ProposalId};
-use ic_nns_governance::pb::v1::{
-    manage_neuron::{Command, RegisterVote, Follow}, 
-    //manage_neuron_response::{Command as CommandResponse},
-    ManageNeuronResponse, ManageNeuron, Vote
+use ic_nns_governance_api::pb::v1::{
+    manage_neuron::{Command, RegisterVote, Follow, RefreshVotingPower, NeuronIdOrSubaccount},
+    ManageNeuron, ManageNeuronResponse, Vote,
 };
 use serde::{Deserialize, Serialize};
 use std::cell::RefCell;
@@ -80,12 +79,19 @@ fn schedule_hourly_vote_check() {
 }
 
 fn schedule_daily_reconfirmation() {
+    // Fire once, very soon after install/upgrade (cannot perform inter-canister call during init)
     set_timer(std::time::Duration::from_secs(1), || {
-        spawn(refresh_following());
+        print(format!("RefreshVotingPower triggered."));
+        spawn(refresh_voting_power(ALPHA_VOTE_CELL.with(|cell| *cell.borrow().get())));
+        spawn(refresh_voting_power(OMEGA_VOTE_CELL.with(|cell| *cell.borrow().get())));
+        spawn(refresh_voting_power(OMEGA_REJECT_CELL.with(|cell| *cell.borrow().get())));
     });
 
     set_timer_interval(std::time::Duration::from_secs(60 * 60 * 24), || {
-        spawn(refresh_following());
+        print(format!("RefreshVotingPower triggered."));
+        spawn(refresh_voting_power(ALPHA_VOTE_CELL.with(|cell| *cell.borrow().get())));
+        spawn(refresh_voting_power(OMEGA_VOTE_CELL.with(|cell| *cell.borrow().get())));
+        spawn(refresh_voting_power(OMEGA_REJECT_CELL.with(|cell| *cell.borrow().get())));
     });
 }
 
@@ -105,16 +111,20 @@ pub async fn run() {
 }
 
 #[update(guard = "is_controller")]
-pub async fn refresh_following() {
-    print("Reconfirmation triggered.");
-    // only 3 topics required to ensure a vote on all topics
-    // 0 is a catchall that covers all but Governance (4) and SNS & Neurons Fund (14)
-    let d_quorum_neuron_id = 4713806069430754115;
-    let alpha_vote_neuron_id = ALPHA_VOTE_CELL.with(|cell| *cell.borrow().get());
-    for &topic in &[0, 4, 14] {
-        if let Err(e) = follow(alpha_vote_neuron_id, topic, vec![d_quorum_neuron_id]).await {
-            print(format!( "ERROR follow_d_quorum(neuron {alpha_vote_neuron_id}, topic {topic}) failed: {e}"));
-        }
+pub async fn refresh_voting_power(neuron_id: u64) {
+    let req = ManageNeuron {
+        neuron_id_or_subaccount: Some(NeuronIdOrSubaccount::NeuronId(NeuronId { id: neuron_id })),
+        command: Some(Command::RefreshVotingPower(RefreshVotingPower {})),
+        id: None,
+    };
+
+    if let Err((code, msg)) =
+        call::call::<_, (ManageNeuronResponse,)>(Principal::from_text(GOVERNANCE_CANISTER_ID).unwrap(), "manage_neuron", (req,)).await
+    {
+        print(format!(
+            "ERROR refresh_voting_power(neuron {}) failed: {:?} - {}",
+            neuron_id, code, msg
+        ));
     }
 }
 

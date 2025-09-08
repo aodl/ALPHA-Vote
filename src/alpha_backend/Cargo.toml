@@ -11,8 +11,8 @@ candid               = "0.10.6"
 ic-cdk               = "0.16.0"
 ic-cdk-macros        = "0.9.0"
 ic-cdk-timers        = "0.3.0"
-ic-nns-governance    = { git = "https://github.com/dfinity/ic", package = "ic-nns-governance", rev = "6fb2fd1f0512c81578ea0d1984c48851e6c08b0d" }
-ic-nns-common        = { git = "https://github.com/dfinity/ic", package = "ic-nns-common",      rev = "6fb2fd1f0512c81578ea0d1984c48851e6c08b0d" }
+ic-nns-governance-api = { git = "https://github.com/dfinity/ic", package = "ic-nns-governance-api", rev = "03393bc8" }
+ic-nns-common         = { git = "https://github.com/dfinity/ic", package = "ic-nns-common",         rev = "03393bc8" }
 ic-stable-structures = "0.6.5"
 serde = { version    = "1.0.203", features = ["derive"] }
 strum                = { version = "0.26.3", features = ["derive"] }
