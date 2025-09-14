@@ -321,8 +321,7 @@ Verify it is same build as here https://dashboard.internetcomputer.org/canister/
 
 The majority of canister settings are using the default values. There are a few that have been explicitly set, described below.
 
-- `log-visibility`
-  - `add-log-viewer` is used to ensure all team members have the ability to view canister logs.
+- `log-visibility=public`
 - `controllers`
   - alpha_backend (all): `...`
   - threshold: `...`, `...`
