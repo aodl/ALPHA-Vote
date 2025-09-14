@@ -7,12 +7,12 @@ edition = "2021"
 crate-type = ["cdylib"]
 
 [dependencies]
-candid               = "0.10.6"
-ic-cdk               = "0.16.0"
-ic-cdk-macros        = "0.9.0"
-ic-cdk-timers        = "0.3.0"
-ic-nns-governance-api = { git = "https://github.com/dfinity/ic", package = "ic-nns-governance-api", rev = "03393bc8" }
-ic-nns-common         = { git = "https://github.com/dfinity/ic", package = "ic-nns-common",         rev = "03393bc8" }
-ic-stable-structures = "0.6.5"
-serde = { version    = "1.0.203", features = ["derive"] }
-strum                = { version = "0.26.3", features = ["derive"] }
+candid                = "0.10.6"
+ic-cdk                = "0.16.0"
+ic-cdk-macros         = "0.16.0"
+ic-cdk-timers         = "0.3.0"
+ic-nns-common         = { git = "https://github.com/dfinity/ic.git", rev = "03393bc8" }
+ic-nns-governance-api = { git = "https://github.com/dfinity/ic.git", rev = "03393bc8" }
+ic-stable-structures  = "0.6.5"
+serde = { version     = "=1.0.203", features = ["derive"] }
+strum                 = { version = "0.26.3", features = ["derive"] }

@@ -5,17 +5,12 @@ use ic_cdk::api::{call, print, time};
 use ic_cdk_macros::{init, post_upgrade};
 use ic_cdk_timers::{set_timer, set_timer_interval};
 use ic_cdk::spawn;
-use ic_stable_structures::{
-    memory_manager::{MemoryId, MemoryManager, VirtualMemory},
-    DefaultMemoryImpl, StableCell,
-};
 use ic_nns_common::pb::v1::{NeuronId, ProposalId};
 use ic_nns_governance_api::pb::v1::{
-    manage_neuron::{Command, RegisterVote, Follow, RefreshVotingPower, NeuronIdOrSubaccount},
+    manage_neuron_response, manage_neuron::{Command, RegisterVote, Follow, RefreshVotingPower, NeuronIdOrSubaccount},
     ManageNeuron, ManageNeuronResponse, Vote,
 };
 use serde::{Deserialize, Serialize};
-use std::cell::RefCell;
 
 const GOVERNANCE_CANISTER_ID: &str = "rrkah-fqaaa-aaaaa-aaaaq-cai";
 
@@ -27,72 +22,100 @@ struct Config {
     seconds_before_deadline_threshold: u64
 }
 
-macro_rules! cell {
-    ($page:expr) => {
-        RefCell::new(
-            StableCell::init(
-                MEM.with(|m| m.borrow().get(MemoryId::new($page))),
-                0u64,
-            )
-            .expect(concat!("init cell on page ", stringify!($page))),
-        )
-    };
-}
-
-thread_local! {
-    static MEM: RefCell<MemoryManager<DefaultMemoryImpl>> =
-        RefCell::new(MemoryManager::init(DefaultMemoryImpl::default()));
-
-    static ALPHA_VOTE_CELL: RefCell<StableCell<u64, VirtualMemory<DefaultMemoryImpl>>> = cell!(0);
-    static OMEGA_VOTE_CELL: RefCell<StableCell<u64, VirtualMemory<DefaultMemoryImpl>>> = cell!(2);
-    static OMEGA_REJECT_CELL: RefCell<StableCell<u64, VirtualMemory<DefaultMemoryImpl>>> = cell!(3);
-    static THRESHOLD_CELL: RefCell<StableCell<u64, VirtualMemory<DefaultMemoryImpl>>> = cell!(4);
-}
-
 #[init]
 fn init(c: Config) {
-    ALPHA_VOTE_CELL.with(|cell| cell.borrow_mut().set(c.alpha_vote_neuron_id).unwrap());
-    OMEGA_VOTE_CELL.with(|cell| cell.borrow_mut().set(c.omega_vote_neuron_id).unwrap());
-    OMEGA_REJECT_CELL.with(|cell| cell.borrow_mut().set(c.omega_reject_neuron_id).unwrap());
-    THRESHOLD_CELL.with(|cell| cell.borrow_mut().set(c.seconds_before_deadline_threshold).unwrap());
-
-    schedule_hourly_vote_check();
-    schedule_daily_reconfirmation();
+    schedule_hourly_vote_check(&c);
+    schedule_daily_reconfirmation(&c);
 }
 
 #[post_upgrade]
-fn post_upgrade() {
-    schedule_hourly_vote_check();
-    schedule_daily_reconfirmation();
+fn post_upgrade(c: Config) {
+    schedule_hourly_vote_check(&c);
+    schedule_daily_reconfirmation(&c);
 }
 
-fn schedule_hourly_vote_check() {
+fn schedule_hourly_vote_check(c: &Config) {
+
+    let alpha = c.alpha_vote_neuron_id;
+    let omega = c.omega_vote_neuron_id;
+    let reject = c.omega_reject_neuron_id;
+    let seconds_before_deadline = c.seconds_before_deadline_threshold;
+
+    fn run(alpha: u64, omega: u64, reject: u64, seconds_before_deadline: u64) -> impl Fn() + 'static {
+        move || {
+            spawn(async move {
+                if let Err(e) = scan_and_process_open_proposals(alpha, omega, reject, seconds_before_deadline).await {
+                    print(format!("Failed to scan proposals: {}", e));
+                }
+            });
+        }
+    }
+
     // Fire once, very soon after install/upgrade (cannot perform inter-canister call during init)
-    set_timer(std::time::Duration::from_secs(1), || {
-        spawn(run());
-    });
+    set_timer(std::time::Duration::from_secs(1), run(alpha, omega, reject, seconds_before_deadline));
 
     // Then keep running hourly
-    set_timer_interval(std::time::Duration::from_secs(60 * 60), || {
-        spawn(run());
-    });
+    set_timer_interval(std::time::Duration::from_secs(60 * 60), run(alpha, omega, reject, seconds_before_deadline));
 }
 
-fn schedule_daily_reconfirmation() {
-    // Fire once, very soon after install/upgrade (cannot perform inter-canister call during init)
-    set_timer(std::time::Duration::from_secs(1), || {
-        print(format!("RefreshVotingPower triggered."));
-        spawn(refresh_voting_power(ALPHA_VOTE_CELL.with(|cell| *cell.borrow().get())));
-        spawn(refresh_voting_power(OMEGA_VOTE_CELL.with(|cell| *cell.borrow().get())));
-        spawn(refresh_voting_power(OMEGA_REJECT_CELL.with(|cell| *cell.borrow().get())));
-    });
+fn schedule_daily_reconfirmation(c: &Config) {
 
-    set_timer_interval(std::time::Duration::from_secs(60 * 60 * 24), || {
-        print(format!("RefreshVotingPower triggered."));
-        spawn(refresh_voting_power(ALPHA_VOTE_CELL.with(|cell| *cell.borrow().get())));
-        spawn(refresh_voting_power(OMEGA_VOTE_CELL.with(|cell| *cell.borrow().get())));
-        spawn(refresh_voting_power(OMEGA_REJECT_CELL.with(|cell| *cell.borrow().get())));
-    });
+    let alpha = c.alpha_vote_neuron_id;
+    let omega = c.omega_vote_neuron_id;
+    let reject = c.omega_reject_neuron_id;
+
+    let log_and_refresh = move || {
+        print(format!("RefreshVotingPower triggered. [{} {} {}]", alpha, omega, reject));
+        for id in [alpha, omega, reject] {
+            spawn(refresh_voting_power(id));
+        }
+    };
+
+    // Fire once, very soon after install/upgrade (cannot perform inter-canister call during init)
+    set_timer(std::time::Duration::from_secs(1), log_and_refresh.clone());
+
+    // Repeat every 24h
+    set_timer_interval(std::time::Duration::from_secs(60 * 60 * 24), log_and_refresh);
+}
+
+async fn refresh_voting_power(neuron_id: u64) {
+    let req = ManageNeuron {
+        neuron_id_or_subaccount: Some(NeuronIdOrSubaccount::NeuronId(NeuronId { id: neuron_id })),
+        command: Some(Command::RefreshVotingPower(RefreshVotingPower {})),
+        id: None,
+    };
+
+    match call::call::<_, (ManageNeuronResponse,)>(
+        Principal::from_text(GOVERNANCE_CANISTER_ID).expect("invalid GOVERNANCE_CANISTER_ID"),
+        "manage_neuron",
+        (req,),
+    ).await {
+        Err((code, msg)) => {
+            println!(
+                "ERROR refresh_voting_power(neuron {}) reject: {:?} - {}",
+                neuron_id, code, msg
+            );
+        }
+        Ok((resp,)) => {
+            match resp.command {
+                Some(manage_neuron_response::Command::Error(e)) => {
+                    println!(
+                        "ERROR refresh_voting_power(neuron {}) response error: {:?} - {}",
+                        neuron_id, e.error_type, e.error_message
+                    );
+                }
+                None => {
+                    println!(
+                        "ERROR refresh_voting_power(neuron {}) empty response.command",
+                        neuron_id
+                    );
+                }
+                _ => {
+                    // success, no need to log
+                }
+            }
+        }
+    }
 }
 
 fn is_controller() -> Result<(), String> {
@@ -103,32 +126,7 @@ fn is_controller() -> Result<(), String> {
     }
 }
 
-#[update(guard = "is_controller")]
-pub async fn run() {
-    if let Err(e) = scan_and_process_open_proposals().await {
-        print(format!("Failed to scan proposals: {}", e));
-    }
-}
-
-#[update(guard = "is_controller")]
-pub async fn refresh_voting_power(neuron_id: u64) {
-    let req = ManageNeuron {
-        neuron_id_or_subaccount: Some(NeuronIdOrSubaccount::NeuronId(NeuronId { id: neuron_id })),
-        command: Some(Command::RefreshVotingPower(RefreshVotingPower {})),
-        id: None,
-    };
-
-    if let Err((code, msg)) =
-        call::call::<_, (ManageNeuronResponse,)>(Principal::from_text(GOVERNANCE_CANISTER_ID).unwrap(), "manage_neuron", (req,)).await
-    {
-        print(format!(
-            "ERROR refresh_voting_power(neuron {}) failed: {:?} - {}",
-            neuron_id, code, msg
-        ));
-    }
-}
-
-// use for periodic confirmation, and also used ad-hoc to configure cross-subnet consensus canister-controlled neurons
+// used ad-hoc to configure cross-subnet consensus canister-controlled neurons
 #[update(guard = "is_controller")]
 pub async fn follow(
     neuron_id: u64,
@@ -212,12 +210,7 @@ async fn register_vote(
 const BATCH_SIZE_LIMIT: u32 = 100;
 const REWARD_STATUS_ACCEPT_VOTES: i32 = 1;
 
-pub async fn scan_and_process_open_proposals() -> Result<(), String> {
-
-    let seconds_before_deadline_threshold = THRESHOLD_CELL.with(|cell| *cell.borrow().get());
-    let alpha_vote_neuron_id = ALPHA_VOTE_CELL.with(|cell| *cell.borrow().get());
-    let omega_vote_neuron_id = OMEGA_VOTE_CELL.with(|cell| *cell.borrow().get());
-    let omega_reject_neuron_id = OMEGA_REJECT_CELL.with(|cell| *cell.borrow().get());
+pub async fn scan_and_process_open_proposals(alpha: u64, omega: u64, reject: u64, seconds_before_deadline: u64) -> Result<(), String> {
 
     let mut live_proposals_count: u32 = 0;
     let mut actionable_proposals_count: u32 = 0;
@@ -256,10 +249,10 @@ pub async fn scan_and_process_open_proposals() -> Result<(), String> {
         
             if let Err(e) = process_one_proposal(
                 proposal,
-                seconds_before_deadline_threshold,
-                alpha_vote_neuron_id,
-                omega_vote_neuron_id,
-                omega_reject_neuron_id,
+                alpha,
+                omega,
+                reject,
+                seconds_before_deadline,
                 &mut actionable_proposals_count,
                 &mut omega_reject_already_actioned_count,
                 &mut omega_reject_actioned_in_this_run_count,
@@ -313,10 +306,10 @@ pub async fn scan_and_process_open_proposals() -> Result<(), String> {
 
 async fn process_one_proposal(
     proposal: &ProposalInfo,
-    seconds_before_deadline_threshold: u64,
     alpha_vote_neuron_id: u64,
     omega_vote_neuron_id: u64,
     omega_reject_neuron_id: u64,
+    seconds_before_deadline_threshold: u64,    
     actionable_count: &mut u32,
     omega_reject_already_actioned: &mut u32,
     omega_reject_actioned_this_run: &mut u32,
