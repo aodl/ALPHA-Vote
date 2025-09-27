@@ -56,7 +56,6 @@ dependencies = [
  "ic-cdk-timers 0.3.0",
  "ic-nns-common 0.9.0 (git+https://github.com/dfinity/ic.git?rev=03393bc8)",
  "ic-nns-governance-api 0.9.0 (git+https://github.com/dfinity/ic.git?rev=03393bc8)",
- "ic-stable-structures",
  "serde",
  "strum",
 ]
