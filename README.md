@@ -53,9 +53,9 @@ Canisters are Internet Computer smart contracts ([more info](https://internetcom
 
 - **[alpha_backend](https://dashboard.internetcomputer.org/canister/2lo52-kiaaa-aaaar-qaqta-cai)**
 - **[alpha_backend_minor_1](https://dashboard.internetcomputer.org/canister/a2fbo-uiaaa-aaaac-qad2q-cai)/2/3/4/5** etc.
-- **threshold** [...-cai](https://dashboard.internetcomputer.org/canister/) ([separate repo](https://github.com/aodl/threshold))
+- **threshold** [basbh-oyaaa-aaaar-qbxha-cai](https://dashboard.internetcomputer.org/canister/basbh-oyaaa-aaaar-qbxha-cai) ([separate repo](https://github.com/aodl/threshold))
 
-None of these canisters are controlled unilaterally by any person. They're decentralised, requiring team member consensus to manage and upgrade. Longer term, the plan is to further decentralise using tokenised governance, by launching an [SNS](https://learn.internetcomputer.org/hc/en-us/articles/34084394684564-SNS-Service-Nervous-System). 
+None of these canisters are controlled unilaterally by any person. The minor canisters are blackholed, and the major canister is decentralised, requiring team member consensus to manage and upgrade. Longer term, a possible plan is to further decentralise using tokenised governance, by launching an [SNS](https://learn.internetcomputer.org/hc/en-us/articles/34084394684564-SNS-Service-Nervous-System). 
 
 More info about each canister is provided below. Jump further down in this document to read more about the threshold canister specifically.
 
@@ -88,7 +88,7 @@ Note that the majority of 13 node subnets involved in this consensus would need 
 graph TD
   %% ───────────────────────────────
   %% Major canister (fiduciary subnet)
-  subgraph Fiduciary Subnet - 40 nodes
+  subgraph Fiduciary Subnet - 34 nodes
     MC[alpha_backend canister]
     MC -. controls .-> N_A[αlpha-vote neuron]
     MC -. controls .-> N_B[Ωmega-vote neuron]
@@ -124,7 +124,7 @@ Pull the last release version.
 
 Verify it is the same build as here https://dashboard.internetcomputer.org/canister/...
 
-**The backend canisters are controlled by the threshold canister**, which is what provides the decentralisation guarantee (that no individual member can exert unilateral control over the canisters, nor the neurons).
+**The backend canisters are controlled by the [threshold canister](https://dashboard.internetcomputer.org/canister/basbh-oyaaa-aaaar-qbxha-cai)**, which is what provides the decentralisation guarantee (that no individual member can exert unilateral control over the canisters, nor the neurons).
 
 ### How to deploy new minor canisters
 
@@ -223,9 +223,7 @@ Ideally it is best to wait for the errors above to resolve before carrying out t
 
 Now we need to set the main alpha_backend canister neurons (the **known neurons**) to follow the votes of the neurons of this new canister (in addition to all the other pre-existing minor canister neurons). You therefore need to be careful to check the current configuration, and then append the new neuron ids to the followees list for each of the 3 known neurons.
 
-This change will need to go through consensus and team member voting. Once the proposals pass, the new canister (and neurons) will become productive participants in the suite of canisters/neurons.
-
-**TODO adjust this section once the threshold canister setup has been finished.**
+This change will need to go through consensus and team member voting. Once the proposals pass, the new canister (and neurons) will become productive participants in the suite of canisters/neurons. See Utils folder for threshold canister management scripts.
 
 <details>
 <summary>Configuring αlpha-vote</summary>
@@ -301,9 +299,9 @@ For the time-being team members are responsible for monitoring and topping up wh
 
 ## Threshold Canister
 
-This canister is set as the exclusive controller of all of the other canisters described above. The **threshold canister** is also set as it's own controller (facilitating self-upgrade proposals).
+This canister is set as the exclusive controller of the alpha_backend canister described above. The **[threshold canister](https://dashboard.internetcomputer.org/canister/basbh-oyaaa-aaaar-qbxha-cai)** is also set as it's own controller (facilitating self-upgrade proposals).
 
-The threshold canister is what allows the other canisters to be managed in a decentralised manner, requiring a vote from team members in order to upgrade the canisters.
+The threshold canister is what allows the alpha_backend canister to be managed in a decentralised manner, requiring a vote from team members in order to upgrade.
 
 Although self-upgrades are supported, if an upgrade of the threshold canister is ever needed, the plan would be to initialise a second threshold canister with the same configuration (as a fallback). Threshold canister A would then need to assign joint control to threshold canister B (an operation that would require a proposal and consensus). This would act as a safety measure, allowing recovery from botched threshold canister upgrades (just in case).
 
@@ -315,14 +313,18 @@ dfx deploy threshold --with-cycles 80000000000 --argument='(vec {principal "'$(d
 
 shasum -a 256 .dfx/local/canisters/threshold/threshold.wasm 
 
-Verify it is same build as here https://dashboard.internetcomputer.org/canister/...
+Verify it is same build as here https://dashboard.internetcomputer.org/canister/basbh-oyaaa-aaaar-qbxha-cai
 
 # Settings
 
 The majority of canister settings are using the default values. There are a few that have been explicitly set, described below.
 
-- `log-visibility=public`
+- `log-visibility=public` (all)
+- `freezing-threshold`
+  - alpha_backend (all): `default`
+  - threshold: `31556952` (1 year) (it's very important that this canister is never deleted, under any circumstances. An automated, unstoppable cycles auto-topup mechanism is in the works)
 - `controllers`
-  - alpha_backend (all): `...`
-  - threshold: `...`, `...`
+  - alpha_backend: `basbh-oyaaa-aaaar-qbxha-cai`
+  - alpha_backend_minor_n: `none`
+  - threshold: `basbh-oyaaa-aaaar-qbxha-cai` (self)
 
