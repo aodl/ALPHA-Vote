@@ -7,7 +7,7 @@
 **Refer to this readme for an explanation of how to**:
 - [Submit any arbitrary proposal](/utils/README.md#submit-any-arbitrary-proposal)
 - [Retrieve a submitted proposal, inspect the details, and vote to accept/reject](/utils/README.md#retrieve-a-submitted-proposal-inspect-the-details-and-vote-to-acceptreject)
-- [Submit a proposal to upgrade one of the three canisters](/utils/README.md#submit-a-proposal-to-upgrade-the-canisters)
+- [Submit a proposal to upgrade the canister](/utils/README.md#submit-a-proposal-to-upgrade-the-canister)
 - [Retrieve a canister upgrade proposal and compute the hash](/utils/README.md#retrieve-a-canister-upgrade-proposal-and-compute-the-hash)
 
 ### Submit any arbitrary proposal
