@@ -56,7 +56,7 @@ Note that various files are generated in the `Utils/canister_upgrade_pipeline/` 
 This script is particularly cool, and it massively simplifies the process of reviewing and verifying canister upgrade proposals. e.g.
 
 ```console
-root@BuildMachine:/home/CO_DELTA/CODELTA/codelta/utils# ./retrieve_proposal_canister_upgrade.sh local 4
+root@BuildMachine:/home/ALPHA-Vote/utils# ./retrieve_proposal_canister_upgrade.sh local 4
 
 Attempting to retrieve canister arg for upgrade proposal id 4 ...
 No canister args to decode
