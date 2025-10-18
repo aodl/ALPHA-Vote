@@ -120,7 +120,7 @@ Decryption complete.
 ()
 ```
 
-It's worth noting that the script doesn't know the candid type for updating canister settings, so the field names are just displayed as numbers. If this is problematic and you'd like to see the field name, to get around this you can grab the payload blob string from the output above, then strip out the '\' delimiters, and feed it to `didc` yourself, specifying the location of the `.did` file for type that's used as an argument.
+It's worth noting that the script doesn't know the candid type for updating canister settings, so the field names are just displayed as numbers. If this is problematic and you'd like to see the field name, to get around this you can grab the payload blob string from the output above, then strip out the '\\' delimiters, and feed it to `didc` yourself, specifying the location of the `.did` file for type that's used as an argument.
 
 e.g.
 
@@ -209,6 +209,3 @@ ef860db565eed8e2322c60a9931300d05d20826adf1e00a96cb8a294cfe4ea85  canister_upgra
 
 If the proposal is active you can accept or reject by executing 'dfx canister call basbh-oyaaa-aaaar-qbxha-cai accept 4 --network=local' or 'dfx canister call basbh-oyaaa-aaaar-qbxha-cai reject 4 --network=local'. You can confirm your vote was received by calling 'dfx canister call basbh-oyaaa-aaaar-qbxha-cai getProposal 4 --network=local' and observing the vote tally
 ```
-
-The above demonstrates an upgrade proposal for the threshold cansiter. The argument is the list of signers (threshold voters). This is just shown as a demonstration (the signers can only actually be reset during initial install, or reinstall, not during an upgrade). The proper way to reset the signers list is to raise a proposal that calls the `setSigners` method on the threshold canister (see the [threshold repo](https://github.com/aodl/threshold/blob/main/threshold.mo)).
-
