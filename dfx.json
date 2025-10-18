@@ -38,6 +38,6 @@
     }
   },
   "output_env_file": ".env",
-  "dfx": "0.25.0",
+  "dfx": "0.29.2",
   "version": 1
 }
