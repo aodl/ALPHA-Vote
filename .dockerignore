@@ -1,0 +1,38 @@
+# VCS & editors
+.git
+.git/**
+.gitignore
+.idea
+.vscode
+.DS_Store
+Thumbs.db
+
+# Rust/DFX build outputs
+target
+**/target
+.dfx
+**/.dfx
+
+# Release outputs (don’t copy artifacts back into the builder)
+release-artifacts
+release-artifacts/**
+
+# Local env & debug
+.env
+debug
+debug/**
+xtask/target
+xtask/**/target
+
+# Optional: exclude the bootstrap canister from the image (keeps final hash focus)
+src/alpha_backend_initial
+src/alpha_backend_initial/**
+
+# Node/other common junk (just in case)
+node_modules
+**/node_modules
+dist
+build
+.tmp
+.cache
+
