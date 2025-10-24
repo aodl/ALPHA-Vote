@@ -9,15 +9,16 @@ crate-type = ["cdylib"]
 [dependencies]
 candid = "0.10.6"
 ic-cdk = "0.16.0"
-ic-cdk-macros = "0.9.0"
+ic-cdk-macros = "0.16.0"
 
-ic-nns-governance = { git = "https://github.com/dfinity/ic", package = "ic-nns-governance", rev = "6fb2fd1f0512c81578ea0d1984c48851e6c08b0d" }
-ic-nns-common = { git = "https://github.com/dfinity/ic", package = "ic-nns-common", rev = "6fb2fd1f0512c81578ea0d1984c48851e6c08b0d" }
-icrc-ledger-types = { git = "https://github.com/dfinity/ic", rev =  "6fb2fd1f0512c81578ea0d1984c48851e6c08b0d"}
-icrc-ledger-client-cdk = { git = "https://github.com/dfinity/ic", rev =  "6fb2fd1f0512c81578ea0d1984c48851e6c08b0d"}
-icp-ledger = { git = "https://github.com/dfinity/ic", rev =  "6fb2fd1f0512c81578ea0d1984c48851e6c08b0d"}
-ic-base-types = { git = "https://github.com/dfinity/ic", rev = "6fb2fd1f0512c81578ea0d1984c48851e6c08b0d" }
-serde = { version = "1.0.203", features = ["derive"] }
+ic-nns-common         = { git = "https://github.com/dfinity/ic.git",  rev = "03393bc8" }
+ic-nns-governance-api = { git = "https://github.com/dfinity/ic.git",  rev = "03393bc8" }
+ic-nns-governance     = { git = "https://github.com/dfinity/ic.git",  rev = "03393bc8" }
+icrc-ledger-types     = { git = "https://github.com/dfinity/ic.git",  rev = "03393bc8" }
+icrc-ledger-client-cdk = { git = "https://github.com/dfinity/ic.git", rev = "03393bc8" }
+icp-ledger            = { git = "https://github.com/dfinity/ic.git",  rev = "03393bc8" }
+ic-base-types         = { git = "https://github.com/dfinity/ic.git",  rev = "03393bc8" }
+serde = { version = "=1.0.203", features = ["derive"] }
 serde_json = { version = "^1.0.107" }
 sha2 = "0.10.8"
 ic-stable-structures = "0.6.5"

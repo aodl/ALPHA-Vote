@@ -139,7 +139,9 @@ There are also additional steps to follow after deployment, to ensure the newly 
 <details>
 <summary>Stage 1 (list of steps)</summary>
 
-- First add a new entry to [dfx.json](https://github.com/aodl/ALPHA-Vote/blob/master/dfx.json), copying the one for `alpha_backend`, but rename to add `_minor_2` (but use whatever is the next available number, instead of 2), then also append `_initial` to the package name and the directories in the candid path (`src/alpha_backend_initial/alpha_backend_initial.did`) 
+- First add a new entry to [dfx.json](https://github.com/aodl/ALPHA-Vote/blob/master/dfx.json), copying the one for `alpha_backend`, but rename to add `_minor_2` (but use whatever is the next available number, instead of 2), then also append `_initial` to the package name and the directories in the candid path (`src/alpha_backend_initial/alpha_backend_initial.did`)
+- Update the workspace Cargo.toml by appending `_initial` to `alpha_backend`
+- Run `cargo update`
 - Choose a subnet to deploy to (one that does not already contain an alpha_backend_minor canister)
 - Deploy, using -> `dfx deploy alpha_backend_minor_{number} --network=ic --subnet {subnet_id}`
 - Call `dfx canister id alpha_backend_minor_{number} --network=ic`. This should return the id of the new canister. It should match an entry that dfx will have automatically inserted into [canister_ids.json](https://github.com/aodl/ALPHA-Vote/blob/master/canister_ids.json) (this will need committing, to keep track of the suite of canisters being used).
@@ -175,7 +177,9 @@ Note that these logs demonstrate a failure case (where an insufficient amont of 
 <details>
 <summary>Stage 2 (list of steps)</summary>
 
-- Once you've got this far, go back to [dfx.json](https://github.com/aodl/ALPHA-Vote/blob/master/dfx.json) and remove the _initial prefixs from the package and directories in the candid path. This means the `alpha_backend` implementation will now be used, rather than the `alpha_backend_initial` implementation.
+- Once you've got this far, go back to [dfx.json](https://github.com/aodl/ALPHA-Vote/blob/master/dfx.json) and remove the _initial prefixs from the package and directories in the candid path, along with the workspace Cargo.toml. This means the `alpha_backend` implementation will now be used, rather than the `alpha_backend_initial` implementation.
+- **Instead of** running ~~cargo update~~, restore the pre-existing committed Cargo.lock file with `git restore Cargo.lock`,
+- Perform a reproducible build by running `make release` (others should be able to get the same hash by running `make release`, based on the committed Cargo.lock file). 
 - Then redeploy as a reinstall, specifying the neurons that were just created, and a 3 hour vote deadline threshold (10800 seconds). e.g.
 
 ```
@@ -184,7 +188,7 @@ dfx deploy alpha_backend_minor_{number} --argument='(record {
   omega_vote_neuron_id              = 12534430129395150681;
   omega_reject_neuron_id            = 17332048203435221648;
   seconds_before_deadline_threshold = 10800
-})' --mode=reinstall --network=ic
+})' --mode=reinstall --network=ic --wasm release-artifacts/alpha_backend.wasm
 ```
 
 The neuron ids used in the command above should obviously be swapped for the ones created by the new canister (the neuron ids provided in the logs). As a convention, be sure to use the smallest neuron id for alpha_vote, the second smallest for omega_vote, and the largest for omega_reject.
@@ -327,4 +331,5 @@ The majority of canister settings are using the default values. There are a few 
   - alpha_backend: `basbh-oyaaa-aaaar-qbxha-cai`
   - alpha_backend_minor_n: `none`
   - threshold: `basbh-oyaaa-aaaar-qbxha-cai` (self)
+
 

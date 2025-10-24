@@ -6,16 +6,16 @@ use ic_cdk::{
 };
 use ic_cdk_macros::{query, update};
 use ic_nns_common::pb::v1::NeuronId;
-use ic_nns_governance::pb::v1::{
+use ic_nns_governance_api::pb::v1::{
     manage_neuron::{
         self,                   
         claim_or_refresh::{By, MemoAndController},
         configure::Operation,
-        Command,
+        Command as NeuronCommand,
         Configure,
         SetVisibility,
     },
-    manage_neuron_response,
+    manage_neuron_response::{Command as NeuronResponseCommand},
     ManageNeuron,
     ManageNeuronResponse,
 };
@@ -164,7 +164,7 @@ async fn create_neuron(nonce: u64) -> Result<u64, String> {
     let neuron_request = ManageNeuron {
         id: None,
         neuron_id_or_subaccount: None,
-        command: Some(Command::ClaimOrRefresh(manage_neuron::ClaimOrRefresh {
+        command: Some(NeuronCommand::ClaimOrRefresh(manage_neuron::ClaimOrRefresh {
             by: Some(By::MemoAndController(MemoAndController {
                 controller: Some(PrincipalId::from(ic_cdk::id())), // this canister
                 memo: nonce,
@@ -181,7 +181,7 @@ async fn create_neuron(nonce: u64) -> Result<u64, String> {
             .map_err(|e| format!("Neuron creation failed: {:?}", e))?;
 
     let neuron_id = match response.command {
-        Some(ic_nns_governance::pb::v1::manage_neuron_response::Command::ClaimOrRefresh(r))
+        Some(NeuronResponseCommand::ClaimOrRefresh(r))
             if r.refreshed_neuron_id.is_some() =>
         {
             let id64 = r.refreshed_neuron_id.unwrap().id;
@@ -204,7 +204,7 @@ async fn configure_neuron(neuron_id: u64) -> Result<(), String> {
     let increase_delay_request = ManageNeuron {
         id: Some(NeuronId { id: neuron_id }),
         neuron_id_or_subaccount: None,
-        command: Some(Command::Configure(Configure {
+        command: Some(NeuronCommand::Configure(Configure {
             operation: Some(Operation::IncreaseDissolveDelay(
                 manage_neuron::IncreaseDissolveDelay {
                     additional_dissolve_delay_seconds: (8 * 365 * 24 * 60 * 60) as u32,
@@ -218,7 +218,7 @@ async fn configure_neuron(neuron_id: u64) -> Result<(), String> {
 
     match response {
         Ok((resp,)) => {
-            if let Some(ic_nns_governance::pb::v1::manage_neuron_response::Command::Error(e)) = resp.command {
+            if let Some(NeuronResponseCommand::Error(e)) = resp.command {
                 return Err(format!(
                     "Error from governance canister when increasing delay: {}",
                     e.error_message
@@ -236,7 +236,7 @@ async fn configure_neuron(neuron_id: u64) -> Result<(), String> {
     let auto_stake_request = ManageNeuron {
         id: Some(NeuronId { id: neuron_id }),
         neuron_id_or_subaccount: None,
-        command: Some(Command::Configure(Configure {
+        command: Some(NeuronCommand::Configure(Configure {
             operation: Some(Operation::ChangeAutoStakeMaturity(
                 manage_neuron::ChangeAutoStakeMaturity {
                     requested_setting_for_auto_stake_maturity: true,
@@ -250,7 +250,7 @@ async fn configure_neuron(neuron_id: u64) -> Result<(), String> {
 
     match response {
         Ok((resp,)) => {
-            if let Some(ic_nns_governance::pb::v1::manage_neuron_response::Command::Error(e)) = resp.command {
+            if let Some(NeuronResponseCommand::Error(e)) = resp.command {
                 return Err(format!(
                     "Error from governance canister when changing auto-stake: {}",
                     e.error_message
@@ -268,7 +268,7 @@ async fn configure_neuron(neuron_id: u64) -> Result<(), String> {
     let visibility_req = ManageNeuron {
         id: Some(NeuronId { id: neuron_id }),
         neuron_id_or_subaccount: None,
-        command: Some(Command::Configure(Configure {
+        command: Some(NeuronCommand::Configure(Configure {
             operation: Some(Operation::SetVisibility(SetVisibility {
                 visibility: Some(2), // 2 = VISIBILITY_PUBLIC
             })),
@@ -280,7 +280,7 @@ async fn configure_neuron(neuron_id: u64) -> Result<(), String> {
 
     match response {
         Ok((resp,)) => {
-            if let Some(manage_neuron_response::Command::Error(e)) = resp.command {
+            if let Some(NeuronResponseCommand::Error(e)) = resp.command {
                 return Err(format!(
                     "Error setting neuron {neuron_id} visibility to public: {}",
                     e.error_message
